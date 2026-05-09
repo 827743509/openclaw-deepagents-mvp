@@ -1,0 +1,7 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+workspace/outbox/*.eml
+workspace/calendar/*.jsonl
+workspace/reminders/*.jsonl

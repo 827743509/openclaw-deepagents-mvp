@@ -1,0 +1,163 @@
+Metadata-Version: 2.4
+Name: openclaw-deepagents-mvp
+Version: 0.1.0
+Summary: OpenClaw-like personal AI assistant MVP built with LangChain Deep Agents
+Requires-Python: <3.14,>=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: deepagents>=0.5.2
+Requires-Dist: langchain>=1.0.0
+Requires-Dist: langgraph>=1.0.0
+Requires-Dist: langchain-openai>=1.0.0
+Requires-Dist: langchain-anthropic>=1.0.0
+Requires-Dist: langchain-google-genai>=3.0.0
+Requires-Dist: python-dotenv>=1.0.1
+Requires-Dist: pydantic>=2.8.0
+Requires-Dist: pydantic-settings>=2.4.0
+Requires-Dist: fastapi>=0.115.0
+Requires-Dist: uvicorn>=0.30.0
+Requires-Dist: tavily-python>=0.5.0
+
+# OpenClaw-like Personal Agent MVP with Deep Agents
+
+这是一个用 LangChain `deepagents` 做的 OpenClaw-like 个人 AI 助手 MVP。
+
+目标不是完整复刻 OpenClaw，而是先搭出可扩展骨架：
+
+- 主 Agent：负责规划、记忆、调用工具、派发子 Agent
+- 子 Agent：邮件助理、日程助理、研究助理
+- 工具：搜索、邮件草稿/发送、日历事件、提醒
+- 人工审批：发送邮件、创建日程等敏感动作默认需要审批
+- Skills：通过 `SKILL.md` 让 Agent 按需加载能力说明
+- Memory：通过 `AGENTS.md` 保存长期偏好
+- 入口：CLI 和 FastAPI HTTP API
+
+## 1. 环境要求
+
+建议：
+
+- Python 3.11 或 3.12
+- 不建议直接使用 Python 3.14，很多 AI 生态包可能还没有完整适配
+- Windows 用户建议在 PowerShell 或 PyCharm Terminal 里运行
+
+## 2. 安装
+
+```bash
+cd openclaw-deepagents-mvp
+python -m venv .venv
+.venv\Scripts\activate  # Windows PowerShell
+# source .venv/bin/activate  # macOS/Linux
+
+pip install -e .
+```
+
+## 3. 配置环境变量
+
+复制 `.env.example` 为 `.env`，然后填 API Key。
+
+```bash
+copy .env.example .env
+```
+
+最少需要一个模型 Provider 的 Key，例如 OpenAI：
+
+```env
+OPENAI_API_KEY=你的key
+OPENCLAW_MODEL=openai:gpt-5.4
+```
+
+如果你想用其它 LangChain 支持的模型，把 `OPENCLAW_MODEL` 改成对应格式，例如：
+
+```env
+OPENCLAW_MODEL=anthropic:claude-sonnet-4-6
+OPENCLAW_MODEL=google_genai:gemini-3.1-pro-preview
+OPENCLAW_MODEL=openrouter:anthropic/claude-sonnet-4-6
+```
+
+## 4. CLI 运行
+
+```bash
+python -m openclaw_da.cli "帮我总结最近的邮件，并给老板写一封礼貌的回复草稿"
+```
+
+交互式：
+
+```bash
+python -m openclaw_da.cli
+```
+
+## 5. HTTP API 运行
+
+```bash
+uvicorn openclaw_da.server:app --reload --port 8000
+```
+
+请求：
+
+```bash
+curl -X POST http://localhost:8000/chat ^
+  -H "Content-Type: application/json" ^
+  -d "{\"message\":\"明天上午10点提醒我检查Milvus服务\"}"
+```
+
+## 6. 安全说明
+
+这个 MVP 默认是安全模式：
+
+- `send_email` 默认不会真的发送，只会写入 `workspace/outbox/`
+- 创建日程默认写入本地 JSONL 文件
+- 真正接 Gmail/Google Calendar/Telegram/Slack 时，建议必须保留审批
+- 不要把本机文件系统、浏览器、Shell 执行权限直接暴露给陌生群聊
+
+启用真实发送前，请先看：
+
+```env
+OPENCLAW_ALLOW_SEND=true
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USERNAME=you@example.com
+SMTP_PASSWORD=app-password
+SMTP_FROM=you@example.com
+```
+
+## 7. 项目结构
+
+```text
+openclaw-deepagents-mvp/
+├── pyproject.toml
+├── .env.example
+├── README.md
+├── data/
+│   ├── memories/AGENTS.md
+│   └── skills/
+│       ├── email_triage/SKILL.md
+│       ├── calendar_ops/SKILL.md
+│       └── personal_assistant/SKILL.md
+├── workspace/
+│   ├── outbox/.gitkeep
+│   ├── calendar/.gitkeep
+│   └── reminders/.gitkeep
+└── src/openclaw_da/
+    ├── __init__.py
+    ├── agent.py
+    ├── cli.py
+    ├── config.py
+    ├── server.py
+    └── tools/
+        ├── __init__.py
+        ├── calendar_tools.py
+        ├── email_tools.py
+        ├── reminder_tools.py
+        └── search_tools.py
+```
+
+## 8. 下一步扩展
+
+建议按这个顺序升级：
+
+1. 接 Telegram Bot webhook
+2. 接 Gmail API，只允许草稿，发送必须审批
+3. 接 Google Calendar API，只允许创建/修改前审批
+4. 加 SQLite/Postgres 任务表
+5. 加 OAuth 用户体系
+6. 加 Docker 沙箱，把浏览器/代码执行隔离出去
+7. 做多通道路由：Telegram、Slack、Discord、WebChat

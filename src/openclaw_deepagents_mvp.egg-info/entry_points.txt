@@ -1,0 +1,2 @@
+[console_scripts]
+openclaw-da = openclaw_da.cli:main
