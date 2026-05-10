@@ -1,17 +1,17 @@
 ---
 name: email-triage
-description: Use this skill for email inbox cleanup, email summarization, prioritization, reply drafting, and safe email sending workflows.
+description: 用于邮件收件箱整理、邮件摘要、优先级判断、回复草稿和安全邮件发送流程。
 ---
 
-# Email Triage Skill
+# 邮件分拣技能
 
-## Rules
+## 规则
 
-- Prefer `create_email_draft` first.
+- 优先调用 `create_email_draft` 创建草稿。
 
 
-## Output Format
+## 输出格式
 
-- Summary
-- Suggested action
-- Draft, if requested
+- 摘要
+- 建议动作
+- 如用户要求，提供草稿内容

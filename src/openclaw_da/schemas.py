@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -6,7 +6,8 @@ from pydantic import BaseModel, Field
 class ChatRequest(BaseModel):
     message: str
     thread_id: str | None = None
-    decisions:list[dict[str, Any]] | None = None
+    decisions: list[dict[str, Any]] | None = None
+
 
 class ExtractResult(BaseModel):
     message: str = Field(default="", description="最终结果")
