@@ -5,7 +5,7 @@ from uuid import uuid4
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
-from openclaw_da.agent import invoke_agent, extract_result
+from openclaw_da.agent import invoke_agent
 from openclaw_da.schemas import ChatRequest
 
 app = FastAPI(title="OpenClaw Deep Agents MVP")

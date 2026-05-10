@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from uuid import uuid4
 
-from openclaw_da.agent import invoke_agent, extract_result
+from openclaw_da.agent import invoke_agent
 
 
 def main() -> None:
@@ -17,7 +17,7 @@ def main() -> None:
     if args.message:
         message = " ".join(args.message)
         result = invoke_agent(message, thread_id=thread_id)
-        print(extract_result(result).message)
+        print(message)
         return
 
     print("OpenClaw-DA interactive mode. 输入 exit 退出。")

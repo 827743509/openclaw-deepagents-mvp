@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import smtplib
+import ssl
 from email.message import EmailMessage
 from pathlib import Path
 from datetime import datetime
 from langchain_core.tools import tool
+from langgraph.types import interrupt
 
 from openclaw_da.config import get_settings
 
@@ -70,8 +72,12 @@ def send_email(to: str, subject: str, body: str) -> str:
     msg["From"] = settings.smtp_from
     msg.set_content(body)
 
-    with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
-        server.starttls()
+    with smtplib.SMTP_SSL(
+        settings.smtp_host,
+        int(settings.smtp_port),
+        timeout=20,
+        context=ssl.create_default_context()
+    ) as server:
         server.login(settings.smtp_username, settings.smtp_password)
         server.send_message(msg)
 
