@@ -19,25 +19,10 @@ class Settings(BaseSettings):
 
     tavily_api_key: str | None = Field(default=None, alias="TAVILY_API_KEY")
 
-    openclaw_allow_send: bool = Field(default=False, alias="OPENCLAW_ALLOW_SEND")
 
-    amap_maps_api_key: str | None = Field(default=None, alias="AMAP_MAPS_API_KEY")
-    amap_mcp_command: str = Field(default="npx", alias="AMAP_MCP_COMMAND")
-    amap_mcp_args: str = Field(
-        default='["-y", "@amap/amap-maps-mcp-server"]',
-        alias="AMAP_MCP_ARGS",
-    )
-    railway_12306_mcp_command: str = Field(default="npx", alias="RAILWAY_12306_MCP_COMMAND")
-    railway_12306_mcp_args: str = Field(
-        default='["-y", "12306-mcp"]',
-        alias="RAILWAY_12306_MCP_ARGS",
-    )
 
-    smtp_host: str | None = Field(default=None, alias="SMTP_HOST")
-    smtp_port: int = Field(default=587, alias="SMTP_PORT")
-    smtp_username: str | None = Field(default=None, alias="SMTP_USERNAME")
-    smtp_password: str | None = Field(default=None, alias="SMTP_PASSWORD")
-    smtp_from: str | None = Field(default=None, alias="SMTP_FROM")
+
+
 
 
 def get_settings() -> Settings:

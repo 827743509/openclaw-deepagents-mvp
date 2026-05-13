@@ -15,13 +15,9 @@ from langgraph.checkpoint.redis import RedisSaver
 from langgraph.types import Command
 
 from openclaw_da.config import get_settings
-from openclaw_da.subaggents.tool.mcp_tools import load_travel_mcp_tools
+
 from openclaw_da.schemas import ChatRequest, ExtractResult
-from openclaw_da.tools import (
-    create_email_draft,
-    list_recent_emails,
-    send_email,
-)
+
 
 load_dotenv()
 
@@ -61,35 +57,10 @@ async def build_agent():
     checkpointer.setup()
 
     tools = []
-    travel_tools =await load_travel_mcp_tools(settings)
+
 
     subagents = [
-        {
-            "name": "email-assistant",
-            "description": "用于邮件分拣、摘要、回复草稿，以及判断邮件是否需要进一步处理。",
-            "system_prompt": (
-                "你是邮件助理。默认先创建邮件草稿；"
-                "除非用户明确要求并且系统配置允许，否则不要直接发送邮件。"
-            ),
-            "tools": [list_recent_emails, create_email_draft, send_email],
-            "skills": ["/data/skills/email_triage/"],
-        },
-        {
-            "name": "travel-assistant",
-            "description": (
-                "用于中国出行规划、高德地图路线规划、地理编码、地点搜索、当前位置查询，"
-                "以及 12306 火车票余票和车次查询。"
-            ),
-            "system_prompt": (
-                "你是中国出行规划助理。"
-                "需要路线规划、地理编码、距离、导航、地点或 POI 查询时，使用高德地图 MCP 工具。"
-                "需要火车票余票、车次、站点、时刻表或票价查询时，使用 12306 MCP 工具。"
-                "查询火车票前，要确认出发城市或车站、到达城市或车站、出行日期；"
-                "如果席别、乘客类型、是否只看高铁动车等条件会影响结果，也要一并确认或说明默认假设。"
-                "返回结果使用简洁中文，包含可选路线、耗时、费用或票价信息，并明确说明关键假设。"
-            ),
-            "tools": travel_tools,
-        },
+
     ]
 
     llm = ChatOpenAI(
@@ -109,6 +80,7 @@ async def build_agent():
     1. 使用 write_todos 维护任务计划；
     2. 使用 task 把子任务分发给合适的子 Agent；
     3. 根据子 Agent 返回的结果，汇总成最终答案。
+    4. 调用知识库
 
     最终回复时，必须使用 ExtractResult 结构化输出，不要只返回普通文本。
 
@@ -144,7 +116,6 @@ async def build_agent():
         subagents=subagents,
         interrupt_on={
             "send_email": {"allowed_decisions": ["approve", "reject"]},
-            "create_calendar_event": {"allowed_decisions": ["approve", "edit", "reject"]},
         },
         checkpointer=checkpointer,
         response_format=ExtractResult,
